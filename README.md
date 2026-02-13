@@ -22,6 +22,7 @@ Composants nécessaires :
 ```bash
 npm install
 ```
+Elle permettra de télécharger les dépendances du projet.
 
 ### 3. Lancement de l'application
 
