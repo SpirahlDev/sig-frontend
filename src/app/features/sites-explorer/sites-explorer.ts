@@ -12,7 +12,7 @@ import { SitesServices } from '../../core/services/sites.service';
 import { GeocodingService } from '../../core/services/geocoding.service';
 import { Site, SiteFilters, SiteType } from '../../core/interfaces/ISite';
 import { IPagination } from '../../core/interfaces/api/IPagination';
-import { IMapCordinates } from '../../core/interfaces/IMapCordinates'; 
+import { IMapCordinates } from '../../core/interfaces/IMapCordinates';
 import { GeocodedLocation } from '../../core/interfaces/IGeocode';
 
 @Component({
@@ -26,7 +26,7 @@ export class SitesExplorer implements OnInit {
   private geocodingService = inject(GeocodingService);
   private message = inject(NzMessageService);
 
-  isModalVisible = false; 
+  isModalVisible = false;
   isSubmitting = false;
   fileList: File[] = [];
 
@@ -39,7 +39,7 @@ export class SitesExplorer implements OnInit {
   sites = signal<Site[]>([]);
   selectedSite = signal<Site | null>(null);
   hoveredSite: Site | null = null;
-  
+
   selectedMapSpot: IMapCordinates | null = null;
   selectedSpotLocation: GeocodedLocation | null = null;
   isLoadingLocation = false;
@@ -49,18 +49,18 @@ export class SitesExplorer implements OnInit {
   addSiteForm: FormGroup;
 
   customIcon = L.icon({
-      iconUrl: 'assets/leaflet/marker-icon.png',
-      shadowUrl: 'assets/leaflet/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41]
+    iconUrl: 'assets/leaflet/marker-icon.png',
+    shadowUrl: 'assets/leaflet/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
   });
 
   newSpotIcon = L.icon({
     iconUrl: 'assets/leaflet/add-new-site-maker.svg',
     shadowUrl: 'assets/leaflet/add-new-site-maker.svg',
-    iconSize:     [48, 60],
-    iconAnchor:   [24, 60],
-    popupAnchor:  [0, -60],
+    iconSize: [48, 60],
+    iconAnchor: [24, 60],
+    popupAnchor: [0, -60],
   });
 
   map!: L.Map;
@@ -89,11 +89,11 @@ export class SitesExplorer implements OnInit {
   }
 
   private readonly ivoryCoastBounds = L.latLngBounds(
-    L.latLng(4.35, -8.60),  
-    L.latLng(10.74, -2.49)  
+    L.latLng(4.35, -8.60),
+    L.latLng(10.74, -2.49)
   );
 
-  initMap(){
+  initMap() {
     this.map = L.map('map', {
       maxBounds: this.ivoryCoastBounds,
       maxBoundsViscosity: 1.0,
@@ -132,16 +132,16 @@ export class SitesExplorer implements OnInit {
       .openPopup();
 
     this.addSiteForm.patchValue({
-        lat: lat.toFixed(6),
-        lon: lon.toFixed(6)
-      });
+      lat: lat.toFixed(6),
+      lon: lon.toFixed(6)
+    });
   }
 
   private createNewSitePopup(lat: number, lon: number): HTMLElement {
     const container = document.createElement('div');
     container.className = 'new-site-popup';
     container.innerHTML = `
-      <p>Vous pouvez ajouter un nouveau site à partir d'ici</p>
+      <p>Ajouter un site à cet emplacement ?</p>
       <hr class="my-2 border-gray-200">
       <span class="text-xs text-gray-400">
         ${lat.toFixed(6)}, ${lon.toFixed(6)}
@@ -167,14 +167,14 @@ export class SitesExplorer implements OnInit {
   onMarkerClick(site: Site): void {
     this.selectedSite.set(site);
     // S'il y a un marker d'ajout de site affiché sur la carte, on le retire
-    if(this.newSpotSelectionMarker){
+    if (this.newSpotSelectionMarker) {
       this.map.removeLayer(this.newSpotSelectionMarker);
     }
   }
 
   private loadSiteTypes(): void {
     this.sitesService.getSiteTypes().subscribe({
-      next: (siteType:IPagination<SiteType>) => {
+      next: (siteType: IPagination<SiteType>) => {
         this.siteTypes = siteType.data;
       },
 
@@ -389,7 +389,7 @@ export class SitesExplorer implements OnInit {
 
 
 
-  resolvePhotoUrl(url:string){
+  resolvePhotoUrl(url: string) {
     return this.sitesService.getPhotoUrl(url);
   }
 }

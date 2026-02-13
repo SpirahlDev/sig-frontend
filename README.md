@@ -1,59 +1,50 @@
-# SigFrontend
+# SIG - Plateforme de Patrimoine (Frontend)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.3.
 
-## Development server
+L'application est développée avec Angular et utilise Leaflet pour la cartographie.
 
-To start a local development server, run:
+## Installation
+
+Suivre ces étapes pour configurer et lancer le projet localement.
+
+### 1. Prérequis
+
+Composants nécessaires :
+
+- Node.js (version 18 ou supérieure recommandée)
+- npm
+- Angular CLI (optionnel : `npm install -g @angular/cli`)
+
+### 2. Installation des dépendances
+
+À la racine du dossier `sig-frontend`, exécuter la commande suivante :
+
+```bash
+npm install
+```
+
+### 3. Lancement de l'application
+
+Démarrer le serveur de développement :
+
+```bash
+npm start
+```
+
+Alternative avec Angular CLI :
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+L'application est accessible sur : http://localhost:4200
 
-## Code scaffolding
+## Structure du projet
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- `src/app/core` : Services API et interfaces 
+- `src/app/features` : Modules fonctionnels (ex: `sites-explorer`).
+- `src/app/shared` : Composants réutilisables.
 
-```bash
-ng generate component component-name
-```
+## Intégration Backend
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Cette application nécessite l'API sig-backend pour fonctionner. S'assurer que le service backend est lancé sur le port local (par défaut : http://localhost:8000).

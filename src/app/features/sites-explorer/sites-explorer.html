@@ -2,8 +2,8 @@
 
     <div class="flex items-center justify-between">
         <div id="title" class="mb-8">
-            <h1 class="text-3xl font-bold text-black mb-2">Patrimoines</h1>
-            <p class="text-[#6C757D] text-base">Explorez et gérez vos patrimoines</p>
+            <h1 class="text-3xl font-bold text-black mb-2">Inventaire du Patrimoine</h1>
+            <p class="text-[#6C757D] text-base">Explorez, recensez et visualisez les richesses culturelles et historiques.</p>
         </div>
         
         <div>
@@ -24,7 +24,7 @@
                     [(ngModel)]="searchQuery"
                     (ngModelChange)="onSearch()"
                     label="Rechercher"
-                    placeholder="Rechercher un site..."
+                    placeholder="Ex: Musée, Monument, Cathédrale..."
                     type="text"
                     name="search"
                     id="search"
@@ -65,8 +65,8 @@
 
             <button nz-button nzType="default" (click)="resetFilters()">
                 <div class="flex items-center gap-2">
-                    <app-icon [icon]="{icon: 'refresh', type: 'material'}"></app-icon>
-                    Réinitialiser
+                    <app-icon [icon]="{icon: 'filter_alt_off', type: 'material'}"></app-icon>
+                    Effacer les filtres
                 </div>
             </button>
 
@@ -131,7 +131,7 @@
             } @else {
                 <div class="h-full flex flex-col items-center justify-center text-gray-400">
                     <app-icon [icon]="{icon: 'touch_app', type: 'material'}" class="text-6xl mb-4"></app-icon>
-                    <p class="text-center">Cliquez sur un marqueur pour afficher les détails du site</p>
+                    <p class="text-center">Sélectionnez un site sur la carte pour découvrir son histoire.</p>
                 </div>
             }
         </div>
@@ -142,7 +142,7 @@
 
 <nz-modal
       [(nzVisible)]="isModalVisible"
-      [nzTitle]="'Ajout d\'un partenaire'"
+      [nzTitle]="'Ajouter un site patrimonial'"
       [nzContent]="modalContent"
       [nzFooter]="modalFooter"
       (nzOnCancel)="handleCancel()"
@@ -221,7 +221,7 @@
 
                 <app-input
                     formControlName="site_creation_date"
-                    label="Date de création du site"
+                    label="Époque ou date de construction"
                     placeholder="Sélectionner une date"
                     type="date"
                     name="site_creation_date"
@@ -237,7 +237,7 @@
                     <label for="description" class="form-label">Description</label>
                     <textarea name="description" id="description" class="form-textarea"
                     formControlName="description"
-                    placeholder="Entrez une description du site (optionnel)"></textarea>
+                    placeholder="Racontez l'histoire ou les particularités de ce lieu..."></textarea>
                 </div>
 
                 <div>
@@ -263,7 +263,7 @@
         <div class="flex gap-2 justify-end">
             <button nz-button nzType="default" (click)="handleCancel()" [disabled]="isSubmitting">Annuler</button>
             <button nz-button nzType="primary" (click)="handleOk()" [nzLoading]="isSubmitting">
-                {{ isSubmitting ? 'Enregistrement...' : 'Terminer' }}
+                {{ isSubmitting ? 'Publication du site...' : 'Enregistrer le site' }}
             </button>
         </div>
     </ng-template>
