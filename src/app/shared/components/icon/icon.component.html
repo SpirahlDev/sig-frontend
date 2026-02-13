@@ -1,0 +1,28 @@
+@switch (icon?.type) {
+
+    <!-- SVG Icons -->
+    @case ('template') {
+        <ng-container
+            [ngTemplateOutlet]="svgTemplate"
+            [ngTemplateOutletContext]="{ $implicit: icon }"
+        />
+    }
+
+    <!-- URL Icons -->
+    @case ('url') {
+        <img
+            [src]="stringIcon"
+            [alt]="icon?.alt || ''"
+            [style.height.px]="icon?.height"
+            [style.width.px]="icon?.width"
+            [class]="icon?.class"
+        />
+    }
+
+    <!-- Material Icons -->
+    @case ('material') {
+        <i [class]="defaultClass()">
+            {{icon?.icon}}
+        </i>
+    }
+}

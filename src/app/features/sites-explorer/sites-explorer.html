@@ -1,0 +1,42 @@
+<main class="bg-[#F6F6F8] p-8">
+
+    <div class="flex items-center justify-between">
+        <div id="title" class="mb-8">
+            <h1 class="text-3xl font-bold text-black mb-2">Patrimoines</h1>
+            <p class="text-[#6C757D] text-base">Explorez et gérez vos patrimoines</p>
+        </div>
+        
+        <div>
+            <button nz-button nzType="primary" (click)="showModal()">
+                <div class="flex items-center gap-2">
+                    <app-icon [icon]="{icon: 'add_circle', type: 'material'}"></app-icon>
+                    <p>Nouveau client</p>
+                </div>
+            </button>
+        </div>
+    </div>
+    
+
+    <section id="head" class="bg-white">
+        <div class="flex gap-5">
+            <div>
+                
+            </div>
+
+            <div>
+                
+            </div>
+        </div>
+    </section>
+    
+    <section id="explorer" class="flex gap-4 h-screen px-4">
+        <div class="w-2/3 rounded-lg border border-[#DBDFE6]">
+            <div id="map" class="h-full w-full rounded-lg"></div>
+        </div>
+    
+        <div class="bg-white w-1/3 rounded-lg border border-[#DBDFE6]">
+    
+        </div>
+    </section>
+
+</main>

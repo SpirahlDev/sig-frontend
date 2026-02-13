@@ -1,0 +1,47 @@
+<div class="w-full">
+  @if (label) {
+    <label [for]="id" class="block mb-2 text-sm font-medium text-gray-900">
+      {{ label }}
+      @if (required) {
+        <span class="text-red-600 ml-1">*</span>
+      }
+    </label>
+  }
+  
+  <div class="relative">
+    @if(prefixIcon){
+      <div  class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
+        <app-icon [icon]="prefixIcon" class="w-4 h-4 text-gray-500 "></app-icon>
+      </div>
+    }
+    
+    <input
+      [type]="type"
+      [id]="id"
+      [name]="name"
+      [placeholder]="placeholder"
+      [required]="required"
+      [disabled]="disabled"
+      [value]="value"
+      (input)="onInput($event)"
+      (blur)="onBlur()"
+      [class]="'bg-white focus-visible:outline-none border text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 ' + 
+        (prefixIcon ? 'ps-10 ' : '') + 
+        (suffixIcon ? 'pe-10 ' : '') + 
+        (error ? 'border-red-500 focus:ring-red-500 focus:border-red-500 ' : 'border-gray-300 ') +
+        (disabled ? 'cursor-not-allowed opacity-50 ' : '')"
+    >
+    
+    @if(suffixIcon){
+      <div  class="absolute inset-y-0 end-0 flex items-center pe-3.5 pointer-events-none">
+        <app-icon [icon]="suffixIcon" class="w-4 h-4 text-gray-500 "></app-icon>
+      </div>
+    }
+  </div>
+  
+  @if (error) {
+    <div class="mt-2 text-sm text-red-600">
+      {{ error }}
+    </div>
+  }
+</div>
