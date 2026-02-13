@@ -1,6 +1,6 @@
 import { Component, Input, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Icon } from '../../../core/icon/Icon';
+import { Icon } from '../../../core/interfaces/icon/Icon';
 
 @Component({
   selector: 'app-icon',
@@ -30,8 +30,8 @@ export class IconComponent {
     return this.icon?.icon as TemplateRef<any>;
   }
 
-  defaultClass(){
-    if(this.icon?.type === 'material'){
+  defaultClass() {
+    if (this.icon?.type === 'material') {
       return 'material-symbols-outlined ' + this.icon?.class;
     }
     return '';

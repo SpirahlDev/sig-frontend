@@ -1,35 +1,395 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import * as L from 'leaflet';
 import { IconComponent } from "../../shared/components/icon/icon.component";
+import { NzButtonModule } from 'ng-zorro-antd/button';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NzModalModule } from 'ng-zorro-antd/modal';
+import { InputComponent } from '../../shared/components/input/input.component';
+import { NzSelectModule } from 'ng-zorro-antd/select';
+import { NzIconModule } from 'ng-zorro-antd/icon';
+import { NzMessageService } from 'ng-zorro-antd/message';
+import { SitesServices } from '../../core/services/sites.service';
+import { GeocodingService } from '../../core/services/geocoding.service';
+import { Site, SiteType } from '../../core/interfaces/ISite';
+import { IPagination } from '../../core/interfaces/api/IPagination';
+import { IMapCordinates } from '../../core/interfaces/IMapCordinates';
+import { GeocodedLocation } from '../../core/interfaces/IGeocode';
 
 @Component({
   selector: 'app-sites-explorer',
-  imports: [IconComponent],
+  imports: [IconComponent, NzButtonModule, NzModalModule, InputComponent, ReactiveFormsModule, FormsModule, NzSelectModule, NzIconModule],
   templateUrl: './sites-explorer.html',
   styleUrl: './sites-explorer.css',
 })
-export class SitesExplorer {
-  isVisible = false;
+export class SitesExplorer implements OnInit {
+  private sitesService = inject(SitesServices);
+  private geocodingService = inject(GeocodingService);
+  private message = inject(NzMessageService);
 
-  ngAfterViewInit(): void {
-    const map = L.map('map').setView([5.348, -4.027], 14);
+  isModalVisible = false;
+  isSubmitting = false;
+  fileList: File[] = [];
 
-    const customIcon = L.icon({
+  searchQuery = '';
+  filterSiteType: number | null = null;
+  filterCity: string | null = null;
+  cities: string[] = ['Abidjan', 'Bouaké', 'Yamoussoukro', 'San-Pédro', 'Korhogo'];
+
+  siteTypes: SiteType[] = [];
+  sites = signal<Site[]>([]);
+  selectedSite = signal<Site | null>(null);
+  hoveredSite: Site | null = null;
+  
+  selectedMapSpot: IMapCordinates | null = null;
+  selectedSpotLocation: GeocodedLocation | null = null;
+  isLoadingLocation = false;
+
+  selectedNewSpot: L.Marker | null = null;
+
+  addSiteForm: FormGroup;
+
+  customIcon = L.icon({
       iconUrl: 'assets/leaflet/marker-icon.png',
       shadowUrl: 'assets/leaflet/marker-shadow.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41]
+  });
+
+  newSpotIcon = L.icon({
+    iconUrl: 'assets/leaflet/add-new-site-marker.svg', // chemin vers ton SVG
+    shadowUrl: 'assets/leaflet/add-new-site-marker.svg', // chemin vers ton SVG
+    iconSize:     [48, 60],   // largeur, hauteur
+    iconAnchor:   [24, 60],   // point d'ancrage = pointe du marker
+    popupAnchor:  [0, -60],   // popup au-dessus du marker
+  });
+
+  map!: L.Map;
+
+
+  constructor(private db: FormBuilder) {
+    this.addSiteForm = this.db.group({
+      name: ['', [Validators.required, Validators.maxLength(45)]],
+      description: [''],
+      lat: ['', Validators.required],
+      lon: ['', Validators.required],
+      city: ['', Validators.maxLength(200)],
+      site_creation_date: [null],
+      site_type_id: [null]
+    });
+  }
+
+  ngOnInit(): void {
+    this.loadSiteTypes();
+  }
+
+
+  ngAfterViewInit(): void {
+    this.initMap();
+  }
+
+  private readonly ivoryCoastBounds = L.latLngBounds(
+    L.latLng(4.35, -8.60),  
+    L.latLng(10.74, -2.49)  
+  );
+
+  initMap(){
+    this.map = L.map('map', {
+      maxBounds: this.ivoryCoastBounds,
+      maxBoundsViscosity: 1.0,
+      minZoom: 6
     });
 
+    this.map.fitBounds(this.ivoryCoastBounds);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+    }).addTo(this.map);
 
-    L.marker([5.348, -4.027], {icon: customIcon}).addTo(map);
+    this.loadSitesList();
+
+    this.map.on('click', (e: L.LeafletMouseEvent) => {
+      this.onMapClick(e.latlng.lat, e.latlng.lng);
+    });
+
   }
 
+  private onMapClick(lat: number, lon: number): void {
+    this.selectedMapSpot = { lat, lon };
+
+    if (this.selectedNewSpot) {
+      this.map.removeLayer(this.selectedNewSpot);
+    }
+
+    const popupContent = this.createNewSitePopup(lat, lon);
+
+    this.selectedNewSpot = L.marker([lat, lon])
+      .addTo(this.map)
+      .setIcon(this.newSpotIcon)
+      .bindPopup(popupContent)
+      .openPopup();
+
+    this.addSiteForm.patchValue({
+        lat: lat.toFixed(6),
+        lon: lon.toFixed(6)
+      });
+  }
+
+  private createNewSitePopup(lat: number, lon: number): HTMLElement {
+    const container = document.createElement('div');
+    container.className = 'new-site-popup';
+    container.innerHTML = `
+      <p>Vous pouvez ajouter un nouveau site à partir d'ici</p>
+      <hr class="my-2 border-gray-200">
+      <span class="text-xs text-gray-400">
+        ${lat.toFixed(6)}, ${lon.toFixed(6)}
+      </span>
+    `;
+
+    return container;
+  }
+
+  private updateMapMarkers(sites: Site[]): void {
+    sites.forEach(site => {
+      const marker = L.marker([Number(site.lat), Number(site.lon)], { icon: this.customIcon })
+        .addTo(this.map);
+
+      // Tooltip au survol montrant les infos du site
+      const tooltipContent = `
+        <div class="site-tooltip">
+          <strong>${site.name}</strong>
+          ${site.city ? `<br><span>${site.city}</span>` : ''}
+          ${site.description ? `<br><small>${site.description.substring(0, 50)}${site.description.length > 50 ? '...' : ''}</small>` : ''}
+        </div>
+      `;
+      marker.bindTooltip(tooltipContent, {
+        direction: 'top',
+        offset: [0, -35],
+        className: 'site-marker-tooltip'
+      });
+
+      // Événement hover
+      marker.on('mouseover', () => {
+        this.hoveredSite = site;
+      });
+
+      marker.on('mouseout', () => {
+        this.hoveredSite = null;
+      });
+
+      // Événement click pour sélectionner le site
+      marker.on('click', () => {
+        this.onMarkerClick(site);
+      });
+    });
+  }
+
+  onMarkerClick(site: Site): void {
+    this.selectedSite.set(site);
+    console.log(site);
+  }
+
+  private loadSiteTypes(): void {
+    this.sitesService.getSiteTypes().subscribe({
+      next: (siteType:IPagination<SiteType>) => {
+        this.siteTypes = siteType.data;
+      },
+
+      error: (error) => {
+        console.error('Erreur lors du chargement des types de site:', error);
+        this.siteTypes = [];
+      }
+    });
+  }
+
+  private loadSitesList(): void {
+    this.sitesService.getSites().subscribe({
+      next: (sites:IPagination<Site>) => {
+        console.log(sites);
+
+        this.sites.set(sites.data);
+        this.updateMapMarkers(this.sites());
+      },
+
+      error: (error) => {
+        console.error('Erreur lors du chargement des sites:', error);
+        this.sites.set([]);
+      }
+    });
+  }
+
+  onFileSelected(event: any): void {
+    const files = event.target.files;
+    if (files) {
+      this.addFiles(files);
+    }
+  }
+
+  private addFiles(files: FileList | File[]): void {
+    const newFiles = Array.from(files).filter(file => {
+      const isValidType = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'].includes(file.type);
+      const isValidSize = file.size / 1024 / 1024 < 2; // 2Mo
+      return isValidType && isValidSize;
+    });
+    this.fileList = [...this.fileList, ...newFiles];
+  }
+
+  removeFile(index: number): void {
+    this.fileList.splice(index, 1);
+  }
+
+  triggerFileInput(fileInput: HTMLInputElement): void {
+    fileInput.click();
+  }
+
+  formatFileSize(size: number): string {
+    if (size === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(size) / Math.log(k));
+    return parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+
+
   showModal(): void {
-    this.isVisible = true;
+    this.isModalVisible = true;
+  }
+
+  handleCancel(): void {
+    this.isModalVisible = false;
+    this.resetForm();
+  }
+
+  handleOk(): void {
+    this.submitSite();
+  }
+
+  submitSite(): void {
+    // Validation du formulaire
+    if (this.addSiteForm.invalid) {
+      Object.values(this.addSiteForm.controls).forEach(control => {
+        control.markAsDirty();
+        control.updateValueAndValidity();
+      });
+      this.message.error('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    if (this.fileList.length === 0) {
+      this.message.error('Veuillez ajouter au moins une image');
+      return;
+    }
+
+    this.isSubmitting = true;
+
+    const formValues = this.addSiteForm.value;
+    const payload = {
+      name: formValues.name,
+      lat: formValues.lat,
+      lon: formValues.lon,
+      description: formValues.description || undefined,
+      city: formValues.city || undefined,
+      site_creation_date: formValues.site_creation_date
+        ? new Date(formValues.site_creation_date).toISOString().split('T')[0]
+        : undefined,
+      site_type_id: formValues.site_type_id || undefined
+    };
+
+    this.sitesService.createSite(payload, this.fileList).subscribe({
+      next: (newSite: Site) => {
+        this.message.success('Site ajouté avec succès');
+        this.isModalVisible = false;
+        this.resetForm();
+        this.isSubmitting = false;
+
+        // Supprimer le marker temporaire
+        this.clearNewSpotMarker();
+
+        // Ajouter le nouveau site à la liste et créer son marker
+        this.sites.update(sites => [...sites, newSite]);
+        this.addSingleMarker(newSite);
+
+        // Sélectionner le nouveau site pour afficher ses détails
+        this.selectedSite.set(newSite);
+      },
+      error: (error) => {
+        console.error('Erreur lors de l\'ajout du site:', error);
+        this.message.error(error.error?.message || 'Erreur lors de l\'ajout du site');
+        this.isSubmitting = false;
+      }
+    });
+  }
+
+  private clearNewSpotMarker(): void {
+    if (this.selectedNewSpot) {
+      this.map.removeLayer(this.selectedNewSpot);
+      this.selectedNewSpot = null;
+      this.selectedMapSpot = null;
+    }
+  }
+
+  private addSingleMarker(site: Site): void {
+    const marker = L.marker([Number(site.lat), Number(site.lon)], { icon: this.customIcon })
+      .addTo(this.map);
+
+    const tooltipContent = `
+      <div class="site-tooltip">
+        <strong>${site.name}</strong>
+        ${site.city ? `<br><span>${site.city}</span>` : ''}
+        ${site.description ? `<br><small>${site.description.substring(0, 50)}${site.description.length > 50 ? '...' : ''}</small>` : ''}
+      </div>
+    `;
+    marker.bindTooltip(tooltipContent, {
+      direction: 'top',
+      offset: [0, -35],
+      className: 'site-marker-tooltip'
+    });
+
+    marker.on('mouseover', () => {
+      this.hoveredSite = site;
+    });
+
+    marker.on('mouseout', () => {
+      this.hoveredSite = null;
+    });
+
+    marker.on('click', () => {
+      this.onMarkerClick(site);
+    });
+  }
+
+  private resetForm(): void {
+    this.addSiteForm.reset();
+    this.fileList = [];
+  }
+
+  onSearch(): void {
+    this.applyFilters();
+  }
+
+  onFilterChange(): void {
+    this.applyFilters();
+  }
+
+  resetFilters(): void {
+    this.searchQuery = '';
+    this.filterSiteType = null;
+    this.filterCity = null;
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    // TODO: Implémenter la logique de filtrage
+    console.log('Filtres appliqués:', {
+      search: this.searchQuery,
+      siteType: this.filterSiteType,
+      city: this.filterCity
+    });
+  }
+
+
+
+  resolvePhotoUrl(url:string){
+    return this.sitesService.getPhotoUrl(url);
   }
 }

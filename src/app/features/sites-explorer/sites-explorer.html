@@ -10,22 +10,74 @@
             <button nz-button nzType="primary" (click)="showModal()">
                 <div class="flex items-center gap-2">
                     <app-icon [icon]="{icon: 'add_circle', type: 'material'}"></app-icon>
-                    <p>Nouveau client</p>
+                    <p>Nouveau site</p>
                 </div>
             </button>
         </div>
     </div>
     
 
-    <section id="head" class="bg-white">
-        <div class="flex gap-5">
-            <div>
-                
+    <section id="filters" class="bg-white rounded-lg p-4 mb-4 border border-[#DBDFE6]">
+        <div class="flex gap-4 items-end">
+            <div class="w-80">
+                <app-input
+                    [(ngModel)]="searchQuery"
+                    (ngModelChange)="onSearch()"
+                    label="Rechercher"
+                    placeholder="Rechercher un site..."
+                    type="text"
+                    name="search"
+                    id="search"
+                    [prefixIcon]="{ type: 'material', icon: 'search' }"
+                ></app-input>
             </div>
 
-            <div>
-                
+            <div class="w-48">
+                <label class="form-label">Type de site</label>
+                <nz-select
+                    [(ngModel)]="filterSiteType"
+                    (ngModelChange)="onFilterChange()"
+                    nzPlaceHolder="Tous les types"
+                    nzAllowClear
+                    class="w-full"
+                >
+                    @for (type of siteTypes; track type.id) {
+                        <nz-option [nzValue]="type.id" [nzLabel]="type.label"></nz-option>
+                    }
+                </nz-select>
             </div>
+
+            <div class="w-48">
+                <label class="form-label">Ville</label>
+                <nz-select
+                    [(ngModel)]="filterCity"
+                    (ngModelChange)="onFilterChange()"
+                    nzPlaceHolder="Toutes les villes"
+                    nzAllowClear
+                    nzShowSearch
+                    class="w-full"
+                >
+                    @for (city of cities; track city) {
+                        <nz-option [nzValue]="city" [nzLabel]="city"></nz-option>
+                    }
+                </nz-select>
+            </div>
+
+            <button nz-button nzType="default" (click)="resetFilters()">
+                <div class="flex items-center gap-2">
+                    <app-icon [icon]="{icon: 'refresh', type: 'material'}"></app-icon>
+                    Réinitialiser
+                </div>
+            </button>
+
+            <button nz-button nzType="primary" (click)="resetFilters()">
+                <div class="flex items-center gap-2">
+                    <!-- <app-icon [icon]="{icon: 'search', type: 'material'}"></app-icon> -->
+                    <p>
+                        Rechercher
+                    </p>
+                </div>
+            </button>
         </div>
     </section>
     
@@ -34,9 +86,225 @@
             <div id="map" class="h-full w-full rounded-lg"></div>
         </div>
     
-        <div class="bg-white w-1/3 rounded-lg border border-[#DBDFE6]">
-    
+        <div class="bg-white w-1/3 rounded-lg border border-[#DBDFE6] p-4 overflow-y-auto">
+            @if (selectedSite()) { 
+                <div class="site-details">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-gray-800">{{ selectedSite()!.name }}</h2>
+                        <button
+                            class="text-gray-400 hover:text-gray-600 transition-colors"
+                            (click)="selectedSite.set(null)"
+                        >
+                            <app-icon [icon]="{icon: 'close', type: 'material'}"></app-icon>
+                        </button>
+                    </div>
+
+                    @if (selectedSite()!.city) {
+                        <div class="flex items-center gap-2 text-gray-600 mb-3">
+                            <app-icon [icon]="{icon: 'location_on', type: 'material'}"></app-icon>
+                            <span>{{ selectedSite()!.city }}</span>
+                        </div>
+                    }
+
+                    <div class="flex items-center gap-2 text-gray-500 text-sm mb-3">
+                        <app-icon [icon]="{icon: 'my_location', type: 'material'}"></app-icon>
+                        <span>{{ selectedSite()!.lat }}, {{ selectedSite()!.lon }}</span>
+                    </div>
+
+                    @if (selectedSite()!.site_creation_date) {
+                        <div class="flex items-center gap-2 text-gray-500 text-sm mb-3">
+                            <app-icon [icon]="{icon: 'event', type: 'material'}"></app-icon>
+                            <span>{{ selectedSite()!.site_creation_date }}</span>
+                        </div>
+                    }
+
+                    @if (selectedSite()!.description) {
+                        <div class="mt-4">
+                            <h3 class="text-sm font-semibold text-gray-700 mb-2">Description</h3>
+                            <p class="text-gray-600 text-sm">{{ selectedSite()!.description }}</p>
+                        </div>
+                    }
+
+                    @if (selectedSite()!.photos && selectedSite()!.photos!.length > 0) {
+                        <div class="mt-4">
+                            <h3 class="text-sm font-semibold text-gray-700 mb-2">Images</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                @for (image of selectedSite()!.photos; track image) {
+                                    <img [src]="resolvePhotoUrl(image.url)" alt="Image du site" class="rounded-lg object-cover h-24 w-full">
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            } @else {
+                <div class="h-full flex flex-col items-center justify-center text-gray-400">
+                    <app-icon [icon]="{icon: 'touch_app', type: 'material'}" class="text-6xl mb-4"></app-icon>
+                    <p class="text-center">Cliquez sur un marqueur pour afficher les détails du site</p>
+                </div>
+            }
         </div>
     </section>
 
 </main>
+
+
+<nz-modal
+      [(nzVisible)]="isModalVisible"
+      [nzTitle]="'Ajout d\'un partenaire'"
+      [nzContent]="modalContent"
+      [nzFooter]="modalFooter"
+      (nzOnCancel)="handleCancel()"
+      [nzWidth]="'70%'"
+    >
+
+    <ng-template #modalContent>
+        <div class="flex gap-5 w-full" [formGroup]="addSiteForm">
+
+            <div class="flex flex-col gap-4 w-full">
+                <app-input
+                    formControlName="name"
+                    label="Nom du site"
+                    placeholder="Nom du site"
+                    type="text"
+                    name="name"
+                    id="name"
+                    [required]="true"
+                    [prefixIcon]="{ type: 'template', icon: buildingIcon }"
+                >
+                    <ng-template #buildingIcon>
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10.8 5.4H11.7C11.9387 5.4 12.1676 5.30518 12.3364 5.1364C12.5052 4.96761 12.6 4.73869 12.6 4.5C12.6 4.2613 12.5052 4.03239 12.3364 3.8636C12.1676 3.69482 11.9387 3.6 11.7 3.6H10.8C10.5613 3.6 10.3324 3.69482 10.1636 3.8636C9.99482 4.03239 9.9 4.2613 9.9 4.5C9.9 4.73869 9.99482 4.96761 10.1636 5.1364C10.3324 5.30518 10.5613 5.4 10.8 5.4ZM10.8 9H11.7C11.9387 9 12.1676 8.90518 12.3364 8.7364C12.5052 8.56761 12.6 8.33869 12.6 8.1C12.6 7.8613 12.5052 7.63239 12.3364 7.4636C12.1676 7.29482 11.9387 7.2 11.7 7.2H10.8C10.5613 7.2 10.3324 7.29482 10.1636 7.4636C9.99482 7.63239 9.9 7.8613 9.9 8.1C9.9 8.33869 9.99482 8.56761 10.1636 8.7364C10.3324 8.90518 10.5613 9 10.8 9ZM6.3 5.4H7.2C7.43869 5.4 7.66761 5.30518 7.8364 5.1364C8.00518 4.96761 8.1 4.73869 8.1 4.5C8.1 4.2613 8.00518 4.03239 7.8364 3.8636C7.66761 3.69482 7.43869 3.6 7.2 3.6H6.3C6.06131 3.6 5.83239 3.69482 5.6636 3.8636C5.49482 4.03239 5.4 4.2613 5.4 4.5C5.4 4.73869 5.49482 4.96761 5.6636 5.1364C5.83239 5.30518 6.06131 5.4 6.3 5.4ZM6.3 9H7.2C7.43869 9 7.66761 8.90518 7.8364 8.7364C8.00518 8.56761 8.1 8.33869 8.1 8.1C8.1 7.8613 8.00518 7.63239 7.8364 7.4636C7.66761 7.29482 7.43869 7.2 7.2 7.2H6.3C6.06131 7.2 5.83239 7.29482 5.6636 7.4636C5.49482 7.63239 5.4 7.8613 5.4 8.1C5.4 8.33869 5.49482 8.56761 5.6636 8.7364C5.83239 8.90518 6.06131 9 6.3 9ZM17.1 16.2H16.2V0.9C16.2 0.661305 16.1052 0.432387 15.9364 0.263604C15.7676 0.0948211 15.5387 0 15.3 0H2.7C2.46131 0 2.23239 0.0948211 2.0636 0.263604C1.89482 0.432387 1.8 0.661305 1.8 0.9V16.2H0.9C0.661305 16.2 0.432387 16.2948 0.263604 16.4636C0.0948211 16.6324 0 16.8613 0 17.1C0 17.3387 0.0948211 17.5676 0.263604 17.7364C0.432387 17.9052 0.661305 18 0.9 18H17.1C17.3387 18 17.5676 17.9052 17.7364 17.7364C17.9052 17.5676 18 17.3387 18 17.1C18 16.8613 17.9052 16.6324 17.7364 16.4636C17.5676 16.2948 17.3387 16.2 17.1 16.2ZM9.9 16.2H8.1V12.6H9.9V16.2ZM14.4 16.2H11.7V11.7C11.7 11.4613 11.6052 11.2324 11.4364 11.0636C11.2676 10.8948 11.0387 10.8 10.8 10.8H7.2C6.96131 10.8 6.73239 10.8948 6.5636 11.0636C6.39482 11.2324 6.3 11.4613 6.3 11.7V16.2H3.6V1.8H14.4V16.2Z" fill="#6B7280"/>
+                        </svg>
+                    </ng-template>
+                </app-input>
+
+                <div class="w-full">
+                    <label for="site_type_id" class="form-label">Type de lieu</label>
+                    <nz-select nzPlaceHolder="Type de lieu"
+                        formControlName="site_type_id"
+                        nzAllowClear
+                    >
+                        @for (type of siteTypes; track type.id) {
+                            <nz-option [nzValue]="type.id" [nzLabel]="type.label"></nz-option>
+                        }
+                    </nz-select>
+                </div>
+
+                <app-input
+                    formControlName="city"
+                    label="Ville"
+                    placeholder="Ville"
+                    type="text"
+                    name="city"
+                    id="city"
+                    [prefixIcon]="{ type: 'material', icon: 'location_on' }"
+                >
+                </app-input>
+
+                <div class="flex gap-4">
+                    <app-input
+                        formControlName="lat"
+                        label="Latitude"
+                        placeholder="Ex: 5.348"
+                        type="text"
+                        name="lat"
+                        id="lat"
+                        [required]="true"
+                        [prefixIcon]="{ type: 'material', icon: 'my_location' }"
+                    >
+                    </app-input>
+
+                    <app-input
+                        formControlName="lon"
+                        label="Longitude"
+                        placeholder="Ex: -4.027"
+                        type="text"
+                        name="lon"
+                        id="lon"
+                        [required]="true"
+                        [prefixIcon]="{ type: 'material', icon: 'my_location' }"
+                    >
+                    </app-input>
+                </div>
+
+                <app-input
+                    formControlName="site_creation_date"
+                    label="Date de création du site"
+                    placeholder="Sélectionner une date"
+                    type="date"
+                    name="site_creation_date"
+                    id="site_creation_date"
+                    [prefixIcon]="{ type: 'material', icon: 'event' }"
+                >
+                </app-input>
+            </div>
+
+            <div class="flex flex-col gap-4 w-full">
+
+                <div>
+                    <label for="description" class="form-label">Description</label>
+                    <textarea name="description" id="description" class="form-textarea"
+                    formControlName="description"
+                    placeholder="Entrez une description du site (optionnel)"></textarea>
+                </div>
+
+                <div>
+                    <label class="form-label">Images du site <span class="text-red-500">*</span></label>
+                    
+                    <div 
+                        class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 flex flex-col items-center justify-center transition-all hover:bg-gray-100 hover:border-gray-400"
+                    >
+                        <input 
+                            #fileInput 
+                            type="file" 
+                            multiple 
+                            hidden 
+                            accept="image/jpeg,image/png,image/jpg,image/webp"
+                            (change)="onFileSelected($event)"
+                        >
+                        <app-icon [icon]="{type: 'material', icon: 'cloud_upload'}" class="text-4xl text-gray-400 mb-2"></app-icon>
+                        <p class="text-sm text-gray-600 mb-3">Téléchargez les photos du site</p>
+                        <button nz-button nzType="default" (click)="triggerFileInput(fileInput)" type="button">
+                            Choisir des fichiers
+                        </button>
+                    </div>
+
+                    @if (fileList.length > 0) {
+                        <div class="mt-4 space-y-2">
+                            @for (file of fileList; track file.name; let i = $index) {
+                                <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                                    <div class="flex items-center gap-3">
+                                        <app-icon [icon]="{type: 'material', icon: 'image'}" class="text-blue-500"></app-icon>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900 truncate max-w-[200px]">{{ file.name }}</p>
+                                            <p class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        type="button"
+                                        (click)="removeFile(i)"
+                                        class="text-gray-400 hover:text-red-500 transition-colors"
+                                    >
+                                        <app-icon [icon]="{type: 'material', icon: 'delete'}"></app-icon>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+            </div>
+
+        </div>
+
+    </ng-template>
+
+    <ng-template #modalFooter>
+        <div class="flex gap-2 justify-end">
+            <button nz-button nzType="default" (click)="handleCancel()" [disabled]="isSubmitting">Annuler</button>
+            <button nz-button nzType="primary" (click)="handleOk()" [nzLoading]="isSubmitting">
+                {{ isSubmitting ? 'Enregistrement...' : 'Terminer' }}
+            </button>
+        </div>
+    </ng-template>
+</nz-modal>

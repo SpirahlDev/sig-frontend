@@ -1,3 +1,129 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import "tailwindcss";
+
+.site-marker-tooltip {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 12px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.site-marker-tooltip .site-tooltip {
+    font-family: inherit;
+}
+
+.site-marker-tooltip .site-tooltip strong {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.site-marker-tooltip .site-tooltip span {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.site-marker-tooltip .site-tooltip small {
+    color: #9ca3af;
+    font-size: 0.75rem;
+}
+
+.leaflet-tooltip-top:before {
+    border-top-color: white;
+}
+
+/* Curseur par défaut sur la carte */
+.leaflet-container {
+    cursor: default;
+}
+
+/* Curseur grab uniquement lors du drag */
+.leaflet-container:active {
+    cursor: grabbing;
+}
+
+/* Curseur pointer sur les markers */
+.leaflet-marker-icon {
+    cursor: pointer;
+}
+
+/* Style du popup de localisation */
+.location-popup {
+    min-width: 180px;
+    font-family: inherit;
+}
+
+.location-popup strong {
+    color: #1f2937;
+    font-weight: 600;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.location-popup .text-gray-600 {
+    color: #4b5563;
+}
+
+.location-popup .text-gray-500 {
+    color: #6b7280;
+}
+
+.location-popup .text-gray-400 {
+    color: #9ca3af;
+}
+
+.location-popup .text-xs {
+    font-size: 0.75rem;
+}
+
+.location-popup .text-sm {
+    font-size: 0.875rem;
+}
+
+.location-popup .my-2 {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.location-popup .border-gray-200 {
+    border-color: #e5e7eb;
+}
+
+/* Popup pour ajouter un nouveau site */
+.new-site-popup {
+    min-width: 180px;
+}
+
+.new-site-popup .text-sm {
+    font-size: 0.875rem;
+}
+
+.new-site-popup .text-gray-600 {
+    color: #4b5563;
+}
+
+.new-site-popup .mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+.add-site-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: #1890ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.add-site-button:hover {
+    background-color: #40a9ff;
+}
+
+.add-site-button .material-symbols-outlined {
+    font-size: 18px;
+}

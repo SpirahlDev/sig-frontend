@@ -1,0 +1,128 @@
+
+// Custom Theming for NG-ZORRO
+// For more information: https://ng.ant.design/docs/customize-theme/en
+@import "../node_modules/ng-zorro-antd/ng-zorro-antd.less";
+
+@app-primary-color: #3E6AE1;
+@app-custom-white:#F9F9FD;
+@app-primary-hover: #4a7a4a;
+@app-primary-active:#3e6a3e;
+@app-secondary-color: #E58E17;
+@app-danger: #dc3545;
+@app-danger-hover: #bd2130;
+@default-input-bg: #ffffff;
+@input-bg-color:#F9FAFB;
+@card-border-color: #ECEEF1;
+
+
+// Override less variables to here
+@menu-dark-bg: @app-custom-white; // Couleur de fond du menu
+@menu-dark-item-active-bg: @app-primary-color; // Couleur de l'élément actif
+@menu-dark-inline-submenu-bg: #F3F3F9;
+@menu-dark-color: black; // Couleur du texte
+
+.ant-layout-sider{
+    background-color: @app-custom-white;
+}
+
+.ant-menu-dark .ant-menu-submenu-open, .ant-menu-dark .ant-menu-submenu-selected, .ant-menu-dark .ant-menu-submenu-title:hover {
+    color: #000000;
+}
+
+.ant-menu-submenu-arrow::after, .ant-menu-submenu-arrow::before{
+    background: #000000!important;
+}
+
+.ant-layout-sider-collapsed .sidebar-logo{
+    padding-left: 12px!important;
+}
+
+.ant-layout-sider-collapsed .sidebar-logo img{
+    height: auto!important;
+    // width: 100%;
+}
+
+.ant-card{
+    border-radius: 0.5rem;
+    background-color: white;
+    border: 1px solid @card-border-color;
+}
+
+.ant-btn{
+    height: auto;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    
+}
+
+.ant-btn-primary{
+    background-color: @app-primary-color;
+    border: none;
+}
+
+.ant-btn-default{
+    background-color: #F1F0EF;
+    border: 1px solid #E8E8E8;
+}
+
+.ant-btn-primary:hover, .ant-btn-primary:focus{
+    background-color: #048de9;
+}
+
+.ant-menu-dark .ant-menu-item:hover{
+    background-color: @app-primary-color;
+}
+// View all variables: https://github.com/NG-ZORRO/ng-zorro-antd/blob/master/components/style/themes/default.less
+
+// @primary-color: #1890ff;
+
+
+.ant-select-single.ant-select{
+    height: 44px;
+}
+
+
+.ant-select{
+    width: 100%;
+}
+
+.ant-select:not(.ant-select-customize-input) .ant-select-selector {
+    position: relative;
+    background-color: @input-bg-color;
+    border: 1px solid #d9d9d9;
+    border-radius: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+    border-color: #d1d5db;
+    height: 100%;
+}
+
+.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) .ant-select-selector {
+    box-shadow: none; 
+    border-right-width: 1px; 
+    outline: 0; 
+    border-color: #d1d5db;
+}
+
+.ant-select:not(.ant-select-disabled):hover .ant-select-selector {
+    border-right-width: 1px;
+    border-color: #d1d5db;
+
+}
+
+.ant-select-single .ant-select-selector .ant-select-selection-placeholder {
+    transition: none;
+    pointer-events: none;
+    padding-top: 6px;
+}
+
+.ant-select-single .ant-select-selector .ant-select-selection-search {
+    position: absolute;
+    top: 6px;
+    right: 11px;
+    bottom: 0;
+    left: 11px;
+}
+.ant-select-selection-item {
+    margin-top: 6px;
+}

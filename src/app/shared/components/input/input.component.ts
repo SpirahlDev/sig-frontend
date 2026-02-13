@@ -1,7 +1,7 @@
 import { Component, Input, forwardRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { Icon } from '../../../core/icon/Icon';
+import { Icon } from '../../../core/interfaces/icon/Icon';
 import { IconComponent } from '../icon/icon.component';
 
 @Component({
@@ -34,8 +34,8 @@ export class InputComponent implements ControlValueAccessor {
   touched: boolean = false;
 
   // ControlValueAccessor methods
-  onChange: any = () => {};
-  onTouched: any = () => {};
+  onChange: any = () => { };
+  onTouched: any = () => { };
 
   writeValue(value: any): void {
     this.value = value;
