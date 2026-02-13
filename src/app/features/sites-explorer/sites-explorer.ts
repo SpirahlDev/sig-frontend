@@ -26,14 +26,14 @@ export class SitesExplorer implements OnInit {
   private geocodingService = inject(GeocodingService);
   private message = inject(NzMessageService);
 
-  isModalVisible = false;
+  isModalVisible = false; 
   isSubmitting = false;
   fileList: File[] = [];
 
   searchQuery = '';
   filterSiteType: number | null = null;
   filterCity: string | null = null;
-  cities: string[] = ['Abidjan', 'Bouaké', 'Yamoussoukro', 'San-Pédro', 'Korhogo'];
+  cities: string[] = ['Abidjan', 'Bouaké', 'Yamoussoukro', 'San-Pédro', 'Korhogo']; // Juste des données fictifs pour l'instant. Normalement ville est une table à part entière mais pour l'instant on va utiliser ça.
 
   siteTypes: SiteType[] = [];
   sites = signal<Site[]>([]);
@@ -44,7 +44,7 @@ export class SitesExplorer implements OnInit {
   selectedSpotLocation: GeocodedLocation | null = null;
   isLoadingLocation = false;
 
-  selectedNewSpot: L.Marker | null = null;
+  newSpotSelectionMarker: L.Marker | null = null;
 
   addSiteForm: FormGroup;
 
@@ -56,11 +56,11 @@ export class SitesExplorer implements OnInit {
   });
 
   newSpotIcon = L.icon({
-    iconUrl: 'assets/leaflet/add-new-site-marker.svg', // chemin vers ton SVG
-    shadowUrl: 'assets/leaflet/add-new-site-marker.svg', // chemin vers ton SVG
-    iconSize:     [48, 60],   // largeur, hauteur
-    iconAnchor:   [24, 60],   // point d'ancrage = pointe du marker
-    popupAnchor:  [0, -60],   // popup au-dessus du marker
+    iconUrl: 'assets/leaflet/add-new-site-maker.svg',
+    shadowUrl: 'assets/leaflet/add-new-site-maker.svg',
+    iconSize:     [48, 60],
+    iconAnchor:   [24, 60],
+    popupAnchor:  [0, -60],
   });
 
   map!: L.Map;
@@ -106,7 +106,6 @@ export class SitesExplorer implements OnInit {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(this.map);
 
-    // Initialiser le layer group pour les markers
     this.markersLayer = L.layerGroup().addTo(this.map);
 
     this.loadSitesList();
@@ -120,13 +119,13 @@ export class SitesExplorer implements OnInit {
   private onMapClick(lat: number, lon: number): void {
     this.selectedMapSpot = { lat, lon };
 
-    if (this.selectedNewSpot) {
-      this.map.removeLayer(this.selectedNewSpot);
+    if (this.newSpotSelectionMarker) {
+      this.map.removeLayer(this.newSpotSelectionMarker);
     }
 
     const popupContent = this.createNewSitePopup(lat, lon);
 
-    this.selectedNewSpot = L.marker([lat, lon])
+    this.newSpotSelectionMarker = L.marker([lat, lon])
       .addTo(this.map)
       .setIcon(this.newSpotIcon)
       .bindPopup(popupContent)
@@ -167,7 +166,10 @@ export class SitesExplorer implements OnInit {
 
   onMarkerClick(site: Site): void {
     this.selectedSite.set(site);
-    console.log(site);
+    // S'il y a un marker d'ajout de site affiché sur la carte, on le retire
+    if(this.newSpotSelectionMarker){
+      this.map.removeLayer(this.newSpotSelectionMarker);
+    }
   }
 
   private loadSiteTypes(): void {
@@ -214,8 +216,7 @@ export class SitesExplorer implements OnInit {
   private addFiles(files: FileList | File[]): void {
     const newFiles = Array.from(files).filter(file => {
       const isValidType = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'].includes(file.type);
-      const isValidSize = file.size / 1024 / 1024 < 2; // 2Mo
-      return isValidType && isValidSize;
+      return isValidType;
     });
     this.fileList = [...this.fileList, ...newFiles];
   }
@@ -308,9 +309,9 @@ export class SitesExplorer implements OnInit {
   }
 
   private clearNewSpotMarker(): void {
-    if (this.selectedNewSpot) {
-      this.map.removeLayer(this.selectedNewSpot);
-      this.selectedNewSpot = null;
+    if (this.newSpotSelectionMarker) {
+      this.map.removeLayer(this.newSpotSelectionMarker);
+      this.newSpotSelectionMarker = null;
       this.selectedMapSpot = null;
     }
   }

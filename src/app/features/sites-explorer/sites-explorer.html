@@ -70,12 +70,6 @@
                 </div>
             </button>
 
-            <button nz-button nzType="primary" (click)="applyFilters()">
-                <div class="flex items-center gap-2">
-                    <app-icon [icon]="{icon: 'search', type: 'material'}"></app-icon>
-                    <p>Rechercher</p>
-                </div>
-            </button>
         </div>
     </section>
     
@@ -248,47 +242,15 @@
 
                 <div>
                     <label class="form-label">Images du site <span class="text-red-500">*</span></label>
-                    
-                    <div 
-                        class="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50 flex flex-col items-center justify-center transition-all hover:bg-gray-100 hover:border-gray-400"
+                    <input
+                        type="file"
+                        multiple
+                        accept="image/jpeg,image/png,image/jpg,image/webp"
+                        (change)="onFileSelected($event)"
+                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     >
-                        <input 
-                            #fileInput 
-                            type="file" 
-                            multiple 
-                            hidden 
-                            accept="image/jpeg,image/png,image/jpg,image/webp"
-                            (change)="onFileSelected($event)"
-                        >
-                        <app-icon [icon]="{type: 'material', icon: 'cloud_upload'}" class="text-4xl text-gray-400 mb-2"></app-icon>
-                        <p class="text-sm text-gray-600 mb-3">Téléchargez les photos du site</p>
-                        <button nz-button nzType="default" (click)="triggerFileInput(fileInput)" type="button">
-                            Choisir des fichiers
-                        </button>
-                    </div>
 
-                    @if (fileList.length > 0) {
-                        <div class="mt-4 space-y-2">
-                            @for (file of fileList; track file.name; let i = $index) {
-                                <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                                    <div class="flex items-center gap-3">
-                                        <app-icon [icon]="{type: 'material', icon: 'image'}" class="text-blue-500"></app-icon>
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-900 truncate max-w-[200px]">{{ file.name }}</p>
-                                            <p class="text-xs text-gray-500">{{ formatFileSize(file.size) }}</p>
-                                        </div>
-                                    </div>
-                                    <button 
-                                        type="button"
-                                        (click)="removeFile(i)"
-                                        class="text-gray-400 hover:text-red-500 transition-colors"
-                                    >
-                                        <app-icon [icon]="{type: 'material', icon: 'delete'}"></app-icon>
-                                    </button>
-                                </div>
-                            }
-                        </div>
-                    }
+                  
                 </div>
 
             </div>
