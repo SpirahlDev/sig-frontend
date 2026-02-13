@@ -10,9 +10,9 @@ import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzMessageService } from 'ng-zorro-antd/message';
 import { SitesServices } from '../../core/services/sites.service';
 import { GeocodingService } from '../../core/services/geocoding.service';
-import { Site, SiteType } from '../../core/interfaces/ISite';
+import { Site, SiteFilters, SiteType } from '../../core/interfaces/ISite';
 import { IPagination } from '../../core/interfaces/api/IPagination';
-import { IMapCordinates } from '../../core/interfaces/IMapCordinates';
+import { IMapCordinates } from '../../core/interfaces/IMapCordinates'; 
 import { GeocodedLocation } from '../../core/interfaces/IGeocode';
 
 @Component({
@@ -64,6 +64,7 @@ export class SitesExplorer implements OnInit {
   });
 
   map!: L.Map;
+  markersLayer!: L.LayerGroup;
 
 
   constructor(private db: FormBuilder) {
@@ -104,6 +105,9 @@ export class SitesExplorer implements OnInit {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(this.map);
+
+    // Initialiser le layer group pour les markers
+    this.markersLayer = L.layerGroup().addTo(this.map);
 
     this.loadSitesList();
 
@@ -148,38 +152,16 @@ export class SitesExplorer implements OnInit {
     return container;
   }
 
+  private clearMarkers(): void {
+    this.markersLayer.clearLayers();
+  }
+
   private updateMapMarkers(sites: Site[]): void {
+    // Nettoyer les markers existants
+    this.clearMarkers();
+
     sites.forEach(site => {
-      const marker = L.marker([Number(site.lat), Number(site.lon)], { icon: this.customIcon })
-        .addTo(this.map);
-
-      // Tooltip au survol montrant les infos du site
-      const tooltipContent = `
-        <div class="site-tooltip">
-          <strong>${site.name}</strong>
-          ${site.city ? `<br><span>${site.city}</span>` : ''}
-          ${site.description ? `<br><small>${site.description.substring(0, 50)}${site.description.length > 50 ? '...' : ''}</small>` : ''}
-        </div>
-      `;
-      marker.bindTooltip(tooltipContent, {
-        direction: 'top',
-        offset: [0, -35],
-        className: 'site-marker-tooltip'
-      });
-
-      // Événement hover
-      marker.on('mouseover', () => {
-        this.hoveredSite = site;
-      });
-
-      marker.on('mouseout', () => {
-        this.hoveredSite = null;
-      });
-
-      // Événement click pour sélectionner le site
-      marker.on('click', () => {
-        this.onMarkerClick(site);
-      });
+      this.addSingleMarker(site);
     });
   }
 
@@ -201,18 +183,23 @@ export class SitesExplorer implements OnInit {
     });
   }
 
-  private loadSitesList(): void {
-    this.sitesService.getSites().subscribe({
-      next: (sites:IPagination<Site>) => {
-        console.log(sites);
-
+  private loadSitesList(filters?: SiteFilters): void {
+    this.sitesService.getSites(filters).subscribe({
+      next: (sites: IPagination<Site>) => {
         this.sites.set(sites.data);
         this.updateMapMarkers(this.sites());
+
+        // Désélectionner le site si il n'est plus dans les résultats
+        const currentSelected = this.selectedSite();
+        if (currentSelected && !sites.data.find(s => s.id === currentSelected.id)) {
+          this.selectedSite.set(null);
+        }
       },
 
       error: (error) => {
         console.error('Erreur lors du chargement des sites:', error);
         this.sites.set([]);
+        this.clearMarkers();
       }
     });
   }
@@ -330,7 +317,7 @@ export class SitesExplorer implements OnInit {
 
   private addSingleMarker(site: Site): void {
     const marker = L.marker([Number(site.lat), Number(site.lon)], { icon: this.customIcon })
-      .addTo(this.map);
+      .addTo(this.markersLayer);
 
     const tooltipContent = `
       <div class="site-tooltip">
@@ -375,16 +362,28 @@ export class SitesExplorer implements OnInit {
     this.searchQuery = '';
     this.filterSiteType = null;
     this.filterCity = null;
-    this.applyFilters();
+
+    // Recharger tous les sites sans filtre
+    this.loadSitesList();
+
+    // Nettoyer le marker de nouveau spot si présent
+    this.clearNewSpotMarker();
   }
 
-  private applyFilters(): void {
-    // TODO: Implémenter la logique de filtrage
-    console.log('Filtres appliqués:', {
-      search: this.searchQuery,
-      siteType: this.filterSiteType,
-      city: this.filterCity
-    });
+  applyFilters(): void {
+    const filters: SiteFilters = {};
+
+    if (this.searchQuery?.trim()) {
+      filters.search = this.searchQuery.trim();
+    }
+    if (this.filterCity) {
+      filters.city = this.filterCity;
+    }
+    if (this.filterSiteType) {
+      filters.site_type_id = this.filterSiteType;
+    }
+
+    this.loadSitesList(Object.keys(filters).length > 0 ? filters : undefined);
   }
 
 

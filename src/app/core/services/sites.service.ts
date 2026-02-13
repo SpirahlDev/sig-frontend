@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
-import { CreateSitePayload, Site, SiteType } from '../interfaces/ISite';
+import { CreateSitePayload, Site, SiteFilters, SiteType } from '../interfaces/ISite';
 import { IResponse } from '../interfaces/api/IResponse';
 import { IPagination } from '../interfaces/api/IPagination';
 import { AppConfig } from '../../app';
@@ -48,8 +48,22 @@ export class SitesServices {
     );
   }
 
-  getSites(): Observable<IPagination<Site>> {
-    return this.http.get<IResponse<IPagination<Site>>>(this.sitesUrl).pipe(
+  getSites(filters?: SiteFilters): Observable<IPagination<Site>> {
+    let params: { [key: string]: string } = {};
+
+    if (filters) {
+      if (filters.search) {
+        params['search'] = filters.search;
+      }
+      if (filters.city) {
+        params['filter[city]'] = filters.city;
+      }
+      if (filters.site_type_id) {
+        params['filter[site_type_id]'] = filters.site_type_id.toString();
+      }
+    }
+
+    return this.http.get<IResponse<IPagination<Site>>>(this.sitesUrl, { params }).pipe(
       map(response => response.data)
     );
   }

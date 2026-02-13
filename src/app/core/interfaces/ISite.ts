@@ -27,3 +27,9 @@ export interface SiteType {
   label: string;
   code: string;
 }
+
+export interface SiteFilters {
+  search?: string;
+  city?: string;
+  site_type_id?: number;
+}
