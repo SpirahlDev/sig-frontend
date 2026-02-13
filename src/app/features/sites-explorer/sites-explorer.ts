@@ -393,3 +393,7 @@ export class SitesExplorer implements OnInit {
     return this.sitesService.getPhotoUrl(url);
   }
 }
+
+/**
+ * Fichier beaucoup trop long. Mais bon c'est vraiment un prototype 
+ */

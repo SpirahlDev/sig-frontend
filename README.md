@@ -3,6 +3,12 @@
 
 L'application est développée avec Angular et utilise Leaflet pour la cartographie.
 
+## Choix Techniques 
+Pour le frontend, nous avons choisi Angular car il permet d’avoir une application bien structurée et intègre tous les outils pour la création d’applications web modernes. Il propose déjà un ensemble cohérent de bibliothèques, de standards et d’outils, ce qui évite de multiplier les dépendances externes.
+
+En ce qui concerne la carte, Leaflet et OpenStreetMap représente un choix logique. Ils sont gratuits, open source et offrent pas mal de fonctionnalités pour répondre aux besoins du projet.
+
+
 ## Installation
 
 Suivre ces étapes pour configurer et lancer le projet localement.
