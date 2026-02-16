@@ -52,6 +52,33 @@ L'application est accessible sur : http://localhost:4200
 - `src/app/features` : Modules fonctionnels (ex: `sites-explorer`).
 - `src/app/shared` : Composants réutilisables.
 
+## Lancement avec Docker
+
+L'image Docker est disponible sur Docker Hub : `anselmealloue/sig-frontend`
+
+### Avec Docker Compose (recommandé)
+
+```bash
+docker compose up -d
+```
+
+L'application sera accessible sur : http://localhost:4200
+
+### Avec Docker directement
+
+```bash
+docker run -d -p 4200:80 --name sig-frontend anselmealloue/sig-frontend:latest
+```
+
+### Construction de l'image locale
+
+Pour construire l'image à partir du Dockerfile :
+
+```bash
+docker build -t sig-frontend .
+docker run -d -p 4200:80 sig-frontend
+```
+
 ## Intégration Backend
 
 Cette application nécessite l'API sig-backend pour fonctionner. S'assurer que le service backend est lancé sur le port local (par défaut : http://localhost:8000).
